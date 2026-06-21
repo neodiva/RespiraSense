@@ -22,18 +22,47 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    console.log("EMAIL RECEIVED:", email);
+    console.log("PASSWORD RECEIVED:", password);
+
     const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+
+    console.log("USER:", user);
+
+    if (!user) {
+      console.log("❌ USER NOT FOUND");
+      return res.status(401).json({ error: "User not found" });
+    }
+
+    console.log("HASH:", user.password);
+
     const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(401).json({ error: 'Invalid credentials' });
+
+    console.log("MATCH:", match);
+
+    if (!match) {
+      console.log("❌ PASSWORD MISMATCH");
+      return res.status(401).json({ error: "Password mismatch" });
+    }
+
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
-    res.json({ token, role: user.role, name: user.name });
+
+    console.log("✅ LOGIN SUCCESS");
+
+    res.json({
+      token,
+      role: user.role,
+      name: user.name
+    });
+
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
