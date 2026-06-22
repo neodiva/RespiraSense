@@ -18,6 +18,13 @@ const io = new Server(server, {
 
 app.use(cors());
 app.use(express.json());
+app.get('/', (req, res) => {
+  res.send('ROOT WORKING');
+});
+
+app.get('/hello', (req, res) => {
+  res.send('HELLO');
+});
 app.set('io', io);
 
 app.use('/api/readings', require('./routes/readings'));
