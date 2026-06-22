@@ -181,6 +181,13 @@ export default function Dashboard() {
           </span>
 
           <button
+            onClick={() => navigate('/predict')}
+            style={styles.predictBtn}
+          >
+            Predictor
+          </button>
+
+          <button
             onClick={logout}
             style={styles.logoutBtn}
           >
@@ -227,6 +234,37 @@ export default function Dashboard() {
               latest.timestamp
             ).toLocaleString()}
           </p>
+        )}
+
+        {latest?.ml_prediction && (
+          <div style={styles.mlPanel}>
+            <h3 style={styles.mlTitle}>🧠 Neural Network Analysis (Live ESP32 Feed)</h3>
+            <div style={styles.mlGrid}>
+              <div style={styles.mlCard}>
+                <div style={styles.mlLabel}>Heart Rate Bound</div>
+                <div style={{...styles.mlValue, color: latest.ml_prediction.hrAbnormal ? '#ff4757' : '#00ffaa'}}>
+                  {latest.ml_prediction.hrAbnormal ? 'ABNORMAL' : 'NORMAL'}
+                </div>
+                <div style={styles.mlScore}>Confidence: {(latest.ml_prediction.hrScore * 100).toFixed(1)}%</div>
+              </div>
+              
+              <div style={styles.mlCard}>
+                <div style={styles.mlLabel}>SpO₂ Bound</div>
+                <div style={{...styles.mlValue, color: latest.ml_prediction.spo2Abnormal ? '#ff4757' : '#00ffaa'}}>
+                  {latest.ml_prediction.spo2Abnormal ? 'ABNORMAL' : 'NORMAL'}
+                </div>
+                <div style={styles.mlScore}>Confidence: {(latest.ml_prediction.spo2Score * 100).toFixed(1)}%</div>
+              </div>
+
+              <div style={styles.mlCard}>
+                <div style={styles.mlLabel}>Disease Detection</div>
+                <div style={{...styles.mlValue, color: latest.ml_prediction.disease ? '#ff4757' : '#00ffaa'}}>
+                  {latest.ml_prediction.disease ? 'DETECTED' : 'CLEAR'}
+                </div>
+                <div style={styles.mlScore}>Confidence: {(latest.ml_prediction.diseaseScore * 100).toFixed(1)}%</div>
+              </div>
+            </div>
+          </div>
         )}
 
         <div style={styles.bottomRow}>
@@ -348,6 +386,17 @@ const styles = {
     cursor: 'pointer'
   },
 
+  predictBtn: {
+    background: 'linear-gradient(90deg, #00ffaa, #00a2ff)',
+    border: 'none',
+    borderRadius: '6px',
+    color: '#0a0e1a',
+    padding: '5px 12px',
+    fontSize: '12px',
+    fontWeight: 'bold',
+    cursor: 'pointer'
+  },
+
   main: {
     flex: 1,
     padding: '24px',
@@ -376,5 +425,54 @@ const styles = {
     gap: '16px',
     alignItems: 'flex-start',
     flexWrap: 'wrap'
+  },
+
+  mlPanel: {
+    background: 'rgba(0, 255, 170, 0.05)',
+    border: '1px solid rgba(0, 255, 170, 0.2)',
+    borderRadius: '12px',
+    padding: '16px',
+    marginTop: '10px',
+    marginBottom: '10px'
+  },
+
+  mlTitle: {
+    margin: '0 0 16px 0',
+    color: '#00ffaa',
+    fontSize: '14px',
+    textTransform: 'uppercase',
+    letterSpacing: '1px'
+  },
+
+  mlGrid: {
+    display: 'flex',
+    gap: '16px',
+    flexWrap: 'wrap'
+  },
+
+  mlCard: {
+    flex: 1,
+    background: 'rgba(0, 0, 0, 0.2)',
+    padding: '12px',
+    borderRadius: '8px',
+    minWidth: '200px'
+  },
+
+  mlLabel: {
+    fontSize: '11px',
+    color: '#64748b',
+    textTransform: 'uppercase',
+    marginBottom: '8px'
+  },
+
+  mlValue: {
+    fontSize: '20px',
+    fontWeight: 'bold',
+    marginBottom: '4px'
+  },
+
+  mlScore: {
+    fontSize: '11px',
+    color: 'rgba(255, 255, 255, 0.5)'
   }
 }
