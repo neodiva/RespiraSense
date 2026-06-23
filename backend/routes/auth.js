@@ -1,69 +1,212 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// POST /api/auth/register
-router.post('/register', async (req, res) => {
-  try {
-    const { name, email, password, role } = req.body;
-    const existing = await User.findOne({ email });
-    if (existing) return res.status(400).json({ error: 'Email already registered' });
-    const user = new User({ name, email, password, role });
-    await user.save();
-    res.status(201).json({ message: 'User created successfully' });
-  } catch (err) {
-    res.status(500).json({ error: 'Server error' });
-  }
-});
+const User = require('../models/User');
 
-// POST /api/auth/login
-router.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
+/* ----------------------------------------------------
+   Generate Patient ID
+   Example:
+   RS-P001
+   RS-P002
+---------------------------------------------------- */
 
-    console.log("EMAIL RECEIVED:", email);
-    console.log("PASSWORD RECEIVED:", password);
+async function generatePatientID() {
 
-    const user = await User.findOne({ email });
+    const lastPatient = await User.findOne({
+        patient_id: { $exists: true, $ne: null }
+    }).sort({ patient_id: -1 });
 
-    console.log("USER:", user);
-
-    if (!user) {
-      console.log("❌ USER NOT FOUND");
-      return res.status(401).json({ error: "User not found" });
+    if (!lastPatient || !lastPatient.patient_id) {
+        return "RS-P001";
     }
 
-    console.log("HASH:", user.password);
-
-    const match = await bcrypt.compare(password, user.password);
-
-    console.log("MATCH:", match);
-
-    if (!match) {
-      console.log("❌ PASSWORD MISMATCH");
-      return res.status(401).json({ error: "Password mismatch" });
-    }
-
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+    const lastNumber = parseInt(
+        lastPatient.patient_id.replace("RS-P", "")
     );
 
-    console.log("✅ LOGIN SUCCESS");
+    return `RS-P${String(lastNumber + 1).padStart(3, "0")}`;
+}
 
-    res.json({
-      token,
-      role: user.role,
-      name: user.name
-    });
+/* ----------------------------------------------------
+   REGISTER
+---------------------------------------------------- */
 
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
-  }
+router.post('/register', async (req, res) => {
+
+    try {
+
+        let {
+            name,
+            email,
+            password,
+            role,
+            dob,
+            fitnessLevel
+        } = req.body;
+
+        email = email.toLowerCase().trim();
+
+        const existing = await User.findOne({ email });
+
+        if (existing) {
+
+            return res.status(400).json({
+                error: "Email already registered."
+            });
+
+        }
+
+        const newUser = {
+
+            name: name.trim(),
+
+            email,
+
+            password,
+
+            role
+
+        };
+
+        if (role === "patient") {
+
+            newUser.patient_id = await generatePatientID();
+
+            newUser.dob = dob;
+
+            newUser.fitnessLevel = fitnessLevel;
+
+        }
+
+        const user = new User(newUser);
+
+        await user.save();
+
+        res.status(201).json({
+
+            success: true,
+
+            message: "Registration successful.",
+
+            patient_id: user.patient_id || null
+
+        });
+
+    }
+    catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+
+            error: "Server Error"
+
+        });
+
+    }
+
+});
+
+/* ----------------------------------------------------
+   LOGIN
+---------------------------------------------------- */
+
+router.post('/login', async (req, res) => {
+
+    try {
+
+        let { email, password } = req.body;
+
+        email = email.toLowerCase().trim();
+
+        const user = await User.findOne({ email });
+
+        if (!user) {
+
+            return res.status(401).json({
+
+                error: "Invalid email or password."
+
+            });
+
+        }
+
+        const match = await user.comparePassword(password);
+
+        if (!match) {
+
+            return res.status(401).json({
+
+                error: "Invalid email or password."
+
+            });
+
+        }
+
+        const token = jwt.sign(
+
+            {
+
+                id: user._id,
+
+                role: user.role
+
+            },
+
+            process.env.JWT_SECRET,
+
+            {
+
+                expiresIn: "7d"
+
+            }
+
+        );
+
+        let displayName = user.name;
+
+        if (user.role === "doctor") {
+
+            displayName = `Dr. ${user.name}`;
+
+        }
+
+        res.json({
+
+            token,
+
+            name: user.name,
+
+            displayName,
+
+            role: user.role,
+
+            patient_id: user.patient_id,
+
+            dob: user.dob,
+
+            age: user.age,
+
+            fitnessLevel: user.fitnessLevel,
+
+            patient_ids: user.patient_ids
+
+        });
+
+    }
+    catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+
+            error: "Server Error"
+
+        });
+
+    }
+
 });
 
 module.exports = router;

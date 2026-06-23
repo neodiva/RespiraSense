@@ -10,24 +10,69 @@ export default function Login() {
   const navigate = useNavigate()
 
   async function handleLogin(e) {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+  e.preventDefault()
 
-    try {
-      const res = await api.post('/auth/login', { email, password })
+  setLoading(true)
+  setError('')
 
-      localStorage.setItem('token', res.data.token)
-      localStorage.setItem('role', res.data.role)
-      localStorage.setItem('name', res.data.name)
+  try {
 
-      navigate('/dashboard')
-    } catch {
-      setError('Invalid email or password')
-    } finally {
-      setLoading(false)
-    }
+    const res = await api.post('/auth/login', {
+      email,
+      password
+    })
+
+    localStorage.setItem('token', res.data.token)
+    localStorage.setItem('role', res.data.role)
+
+    localStorage.setItem('name', res.data.name)
+
+    localStorage.setItem(
+      'displayName',
+      res.data.displayName
+    )
+
+    localStorage.setItem(
+      'patient_id',
+      res.data.patient_id || ''
+    )
+
+    localStorage.setItem(
+      'dob',
+      res.data.dob || ''
+    )
+
+    localStorage.setItem(
+      'age',
+      res.data.age || ''
+    )
+
+    localStorage.setItem(
+      'fitnessLevel',
+      res.data.fitnessLevel || ''
+    )
+
+    navigate('/dashboard')
+
   }
+  catch(err){
+
+    setError(
+
+      err.response?.data?.error ||
+
+      'Invalid email or password'
+
+    )
+
+  }
+  finally{
+
+    setLoading(false)
+
+  }
+
+}
 
   return (
     <div style={styles.page}>
@@ -49,7 +94,7 @@ export default function Login() {
 
           <div>
             <h1 style={styles.title}>RespiraSense</h1>
-            <p style={styles.subtitle}>Patient Monitoring Portal</p>
+            <p style={styles.subtitle}>AI Respiratory Monitoring Platform</p>
           </div>
         </div>
 
