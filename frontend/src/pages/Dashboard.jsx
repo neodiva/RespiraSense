@@ -7,7 +7,15 @@ import VitalsChart from '../components/VitalsChart'
 import AlertsPanel from '../components/AlertsPanel'
 
 export default function Dashboard() {
-  const [patientId, setPatientId] = useState('P001')
+  const role = localStorage.getItem('role') || 'doctor'
+  const name = localStorage.getItem('name') || 'User'
+
+// Temporary patient ID
+  const userPatientId = localStorage.getItem('patient_id') || 'P001'
+
+  const [patientId, setPatientId] = useState(
+  role === 'patient' ? userPatientId : 'P001'
+  )
   const [latest, setLatest] = useState(null)
   const [readings, setReadings] = useState([])
   const [alerts, setAlerts] = useState([])
@@ -15,8 +23,7 @@ export default function Dashboard() {
 
   const navigate = useNavigate()
 
-  const name = localStorage.getItem('name') || 'User'
-  const role = localStorage.getItem('role') || 'doctor'
+  
 
   // Load data when patient changes
   useEffect(() => {
@@ -140,11 +147,17 @@ export default function Dashboard() {
             Patient ID
           </label>
 
-          <input
-            value={patientId}
-            onChange={(e) => setPatientId(e.target.value)}
-            style={styles.pidInput}
-          />
+         {role === 'doctor' ? (
+  <input
+    value={patientId}
+    onChange={(e) => setPatientId(e.target.value)}
+    style={styles.pidInput}
+  />
+) : (
+  <div style={styles.pidDisplay}>
+    {patientId}
+  </div>
+)}
         </div>
 
         <div style={styles.headerRight}>
@@ -310,7 +323,16 @@ const styles = {
     fontFamily: "'JetBrains Mono', monospace",
     outline: 'none'
   },
-
+  pidDisplay: {
+    background: '#0a0e1a',
+    border: '1px solid #1e2d45',
+    borderRadius: '6px',
+    padding: '5px 10px',
+    color: '#00d4ff',
+    width: '90px',
+    textAlign: 'center',
+    fontWeight: '600'
+  },
   headerRight: {
     display: 'flex',
     alignItems: 'center',
