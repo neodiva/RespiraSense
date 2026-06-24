@@ -18,14 +18,14 @@ async function generatePatientID() {
     }).sort({ patient_id: -1 });
 
     if (!lastPatient || !lastPatient.patient_id) {
-        return "RS-P001";
+        return "P001";
     }
 
     const lastNumber = parseInt(
-        lastPatient.patient_id.replace("RS-P", "")
+        lastPatient.patient_id.replace("P", "")
     );
 
-    return `RS-P${String(lastNumber + 1).padStart(3, "0")}`;
+    return `P${String(lastNumber + 1).padStart(3, "0")}`;
 }
 
 /* ----------------------------------------------------
