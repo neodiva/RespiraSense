@@ -30,7 +30,7 @@ export default function Dashboard() {
     async function fetchData() {
       try {
         const [rRes, aRes] = await Promise.all([
-          api.get(`/readings/history?patient_id=${patientId}&range=24h`),
+          api.get(`/readings/history?patient_id=${patientId}&range=7d`),
           api.get(`/alerts?patient_id=${patientId}&resolved=false`)
         ])
 
