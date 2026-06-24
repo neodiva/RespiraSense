@@ -1,7 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
-import Register from './pages/Register'   // <-- ADD THIS
+import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
+import Predict from './pages/Predict'
 
 function PrivateRoute({ children }) {
   return localStorage.getItem('token') ? children : <Navigate to="/login" />
@@ -20,6 +21,7 @@ export default function App() {
           </PrivateRoute>
         }
       />
+      <Route path="/predict" element={<Predict />} />
       <Route path="*" element={<Navigate to="/dashboard" />} />
     </Routes>
   )

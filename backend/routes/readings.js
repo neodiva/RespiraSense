@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const nn = require('../utils/NeuralNetwork');
 const Reading = require('../models/Reading');
 const Alert = require('../models/Alert');
 
@@ -17,17 +18,18 @@ router.post('/', async (req, res) => {
     // Try ML prediction (optional — works without it)
     let mlResult = null;
     try {
-      const axios = require('axios');
-      const mlRes = await axios.post(`${process.env.ML_API_URL}/predict`, {
-        patient_id, spo2, heart_rate, respiration_rate
-      }, { timeout: 3000 });
-      mlResult = mlRes.data;
-    } catch {
-      // ML API not available — continue without it
+      // Default to age 40, fitness 3 for ESP32 readings
+      const features = [40 / 100.0, 3 / 5.0, spo2 / 100.0, heart_rate / 200.0];
+      mlResult = nn.predict(features);
+    } catch (e) {
+      console.error("NN Prediction failed:", e);
     }
 
-    const risk_level = mlResult?.risk_level || getRiskLevel(spo2);
-    const health_score = mlResult?.health_score || null;
+    let risk_level = getRiskLevel(spo2);
+    if (mlResult && (mlResult.disease || mlResult.hrAbnormal || mlResult.spo2Abnormal)) {
+       risk_level = 'HIGH';
+    }
+    const health_score = null;
 
     const reading = new Reading({
       patient_id, spo2, heart_rate, respiration_rate,
@@ -40,11 +42,11 @@ router.post('/', async (req, res) => {
     io.emit('new_reading', reading);
 
     // Create alert if dangerous
-    if (spo2 < 90 || (mlResult && mlResult.risk_probability > 0.8)) {
+    if (spo2 < 90 || (mlResult && mlResult.disease)) {
       const alert = new Alert({
         patient_id,
-        message: mlResult
-          ? `Predicted deterioration — ${Math.round(mlResult.risk_probability * 100)}% confidence`
+        message: (mlResult && mlResult.disease) 
+          ? `Neural Network detected abnormal disease state!` 
           : `SpO₂ dropped to ${spo2}%`,
         risk_level,
         spo2,
