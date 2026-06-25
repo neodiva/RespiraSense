@@ -30,7 +30,7 @@ app.set('io', io);
 app.use('/api/readings', require('./routes/readings'));
 app.use('/api/alerts',   require('./routes/alerts'));
 app.use('/api/auth',     require('./routes/auth'));
-
+app.use('/api/predict', require('./routes/predict')); 
 app.get('/api/test', (req, res) => {
   res.json({ message: 'RespiraSense backend is running!' });
 });
