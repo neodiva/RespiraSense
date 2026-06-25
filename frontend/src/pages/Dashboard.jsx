@@ -160,48 +160,56 @@ export default function Dashboard() {
 )}
         </div>
 
-        <div style={styles.headerRight}>
-          <div
-            style={{
-              ...styles.liveChip,
-              background: connected
-                ? '#10b98115'
-                : '#ef444415',
-              border: `1px solid ${
-                connected
-                  ? '#10b98130'
-                  : '#ef444430'
-              }`,
-              color: connected
-                ? '#10b981'
-                : '#ef4444'
-            }}
-          >
-            <span
-              style={{
-                ...styles.liveDot,
-                background: connected
-                  ? '#10b981'
-                  : '#ef4444'
-              }}
-            />
+       <div style={styles.headerRight}>
 
-            {connected ? 'Live' : 'Offline'}
-          </div>
+  <button
+    onClick={() => navigate('/predict')}
+    style={styles.aiBtn}
+  >
+    🧠 AI Insights
+  </button>
 
-          <span style={styles.userName}>
-            {name} · {role}
-          </span>
+  <div
+    style={{
+      ...styles.liveChip,
+      background: connected
+        ? '#10b98115'
+        : '#ef444415',
+      border: `1px solid ${
+        connected
+          ? '#10b98130'
+          : '#ef444430'
+      }`,
+      color: connected
+        ? '#10b981'
+        : '#ef4444'
+    }}
+  >
+    <span
+      style={{
+        ...styles.liveDot,
+        background: connected
+          ? '#10b981'
+          : '#ef4444'
+      }}
+    />
 
-          <button
-            onClick={logout}
-            style={styles.logoutBtn}
-          >
-            Sign out
-          </button>
-        </div>
-      </header>
+    {connected ? 'Live' : 'Offline'}
+  </div>
 
+  <span style={styles.userName}>
+    {name} · {role}
+  </span>
+
+  <button
+    onClick={logout}
+    style={styles.logoutBtn}
+  >
+    Sign out
+  </button>
+
+</div>
+</header>
       <main style={styles.main}>
         <div style={styles.vitalsRow}>
           <VitalCard
@@ -359,7 +367,18 @@ const styles = {
     fontSize: '12px',
     color: '#64748b'
   },
-
+  aiBtn: {
+    background: 'linear-gradient(135deg, #00d4ff, #2563eb)',
+    border: 'none',
+    borderRadius: '8px',
+    color: '#fff',
+    padding: '8px 16px',
+    cursor: 'pointer',
+    fontSize: '13px',
+    fontWeight: '600',
+    transition: 'all 0.25s ease',
+    boxShadow: '0 4px 12px rgba(0,212,255,0.25)'
+  },
   logoutBtn: {
     background: 'transparent',
     border: '1px solid #1e2d45',
