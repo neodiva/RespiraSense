@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../api';
 import './Predict.css';
 
@@ -12,6 +12,8 @@ export default function Predict() {
 
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
+  const patientId =
+  localStorage.getItem('patient_id') || 'P001';
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
@@ -22,7 +24,56 @@ export default function Predict() {
       [name]: Number(value)
     }));
   };
+  useEffect(() => {
 
+  async function loadPatient() {
+
+    try {
+
+      const patientRes =
+        await api.get(`/patients/${patientId}`);
+
+      const latestReading =
+        await api.get(
+          `/readings?patient_id=${patientId}&limit=1`
+        );
+
+      const patient =
+        patientRes.data.patient;
+
+      const reading =
+        latestReading.data[0];
+
+      if (patient && reading) {
+
+        setFormData({
+
+          age: patient.age,
+
+          fitness: patient.fitness_score,
+
+          spo2: reading.spo2,
+
+          hr: reading.heart_rate
+
+        });
+
+      }
+
+    } catch (err) {
+
+      console.error(
+        "Failed to load patient:",
+        err
+      );
+
+    }
+
+  }
+
+  loadPatient();
+
+}, [patientId]);
   const handleAnalyze = async () => {
     setLoading(true);
     setPrediction(null);

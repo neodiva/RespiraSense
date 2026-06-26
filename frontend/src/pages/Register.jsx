@@ -118,7 +118,37 @@ export default function Register() {
                 payload
 
             );
+            if (form.role === "patient") {
 
+                const birthDate = new Date(form.dob);
+
+                const today = new Date();
+
+                let age =
+                today.getFullYear() -
+                birthDate.getFullYear();
+
+                const month =
+                today.getMonth() -
+                birthDate.getMonth();
+
+                if (
+                    month < 0 ||
+                    (month === 0 &&
+                    today.getDate() < birthDate.getDate())
+                ) {
+                    age--;
+                }
+
+                 await api.post("/patients", {
+                 patient_id: res.data.patient_id,
+                name: form.name,
+                age,
+                gender: "Other", // we'll improve this in a minute
+                fitness_score: form.fitnessLevel
+    });
+
+}
 
 
             setSuccess("Account created successfully!");
